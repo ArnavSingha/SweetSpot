@@ -1,39 +1,54 @@
-// This approach is taken from https://github.com/vercel/next.js/tree/canary/examples/with-mongodb
-import { MongoClient } from "mongodb"
+
+import mongoose from 'mongoose';
 import '@/lib/env';
 
-const uri = process.env.MONGODB_URI
-const options = {}
+const MONGODB_URI = process.env.MONGODB_URI!;
 
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
-
-if (!uri) {
-  // In a development environment without a MONGODB_URI, we don't want to connect.
-  // We'll rely on the mock data store.
-  console.warn("MONGODB_URI not found. App will use in-memory data store.");
-  // We create a dummy promise that will never resolve to prevent connection attempts.
-  clientPromise = new Promise(() => {});
-} else {
-  if (process.env.NODE_ENV === "development") {
-    // In development mode, use a global variable so that the value
-    // is preserved across module reloads caused by HMR (Hot Module Replacement).
-    let globalWithMongo = global as typeof globalThis & {
-      _mongoClientPromise?: Promise<MongoClient>
-    }
-
-    if (!globalWithMongo._mongoClientPromise) {
-      client = new MongoClient(uri, options)
-      globalWithMongo._mongoClientPromise = client.connect()
-    }
-    clientPromise = globalWithMongo._mongoClientPromise
-  } else {
-    // In production mode, it's best to not use a global variable.
-    client = new MongoClient(uri, options)
-    clientPromise = client.connect()
-  }
+if (!MONGODB_URI) {
+  throw new Error(
+    'Please define the MONGODB_URI environment variable inside .env'
+  );
 }
 
-// Export a module-scoped MongoClient promise. By doing this in a
-// separate module, the client can be shared across functions.
-export default clientPromise
+/**
+ * Global is used here to maintain a cached connection across hot reloads
+ * in development. This prevents connections from growing exponentially
+ * during API Route usage.
+ */
+let cached = (global as any).mongoose;
+
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
+
+async function dbConnect() {
+  if (cached.conn) {
+    console.log('✅ Using cached MongoDB connection.');
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    console.log('✨ Attempting to create new MongoDB connection...');
+    const opts = {
+      bufferCommands: false,
+      dbName: 'sweetspot_prod',
+    } as mongoose.ConnectOptions;
+
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log('✅ MongoDB connection successful.');
+      return mongoose;
+    });
+  }
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    console.error('❌ Mongoose connection error:', e);
+    throw e;
+  }
+
+  return cached.conn;
+}
+
+export default dbConnect;

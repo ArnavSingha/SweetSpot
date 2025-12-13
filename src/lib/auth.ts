@@ -1,37 +1,36 @@
+'use server';
+
 import 'server-only';
+import '@/lib/env';
 import { cookies } from 'next/headers';
-import {
-  createSession as dbCreateSession,
-  deleteSession as dbDeleteSession,
-} from './data';
-import { findUserById } from './data';
+import jwt from 'jsonwebtoken';
+import type { User } from './types';
 
-const SESSION_COOKIE_NAME = 'sweetspot_session';
-const SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days
+const TOKEN_COOKIE_NAME = 'sweetspot_jwt';
+const JWT_SECRET = process.env.JWT_SECRET;
 
-export async function createSession(userId: string) {
-  const user = await findUserById(userId);
-  if (!user) {
-    throw new Error('Cannot create session for non-existent user');
-  }
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set');
+}
 
-  const session = await dbCreateSession(user.id, SESSION_DURATION * 1000);
-  cookies().set(SESSION_COOKIE_NAME, session.id, {
+export async function createSession(user: User) {
+  const payload = { userId: user.id, role: user.role, name: user.name };
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+
+  (await cookies()).set(TOKEN_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    expires: session.expiresAt,
+    expires: expiresAt,
     sameSite: 'lax',
     path: '/',
   });
 }
 
 export async function deleteSession() {
-  const sessionId = cookies().get(SESSION_COOKIE_NAME)?.value;
-  if (sessionId) {
-    await dbDeleteSession(sessionId);
-    cookies().set(SESSION_COOKIE_NAME, '', {
-      httpOnly: true,
-      expires: new Date(0),
-    });
-  }
+  (await cookies()).set(TOKEN_COOKIE_NAME, '', {
+    httpOnly: true,
+    expires: new Date(0),
+  });
 }

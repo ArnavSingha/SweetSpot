@@ -1,24 +1,37 @@
 'server-only';
+import '@/lib/env';
 import { cookies } from 'next/headers';
-import {
-  getSession as dbGetSession,
-  findUserById,
-} from '@/lib/data';
+import jwt from 'jsonwebtoken';
+import { findUserById } from '@/lib/data';
 import type { User } from '@/lib/types';
 
-const SESSION_COOKIE_NAME = 'sweetspot_session';
+const TOKEN_COOKIE_NAME = 'sweetspot_jwt';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set');
+}
+
+type DecodedToken = {
+  userId: string;
+  role: 'user' | 'admin';
+  name: string;
+  iat: number;
+  exp: number;
+};
 
 export async function getSessionUser(): Promise<User | null> {
-  const sessionId = cookies().get(SESSION_COOKIE_NAME)?.value;
-  if (!sessionId) {
+  const token = cookies().get(TOKEN_COOKIE_NAME)?.value;
+  if (!token) {
     return null;
   }
 
-  const session = await dbGetSession(sessionId);
-  if (!session) {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
+    const user = await findUserById(decoded.userId);
+    return user;
+  } catch (error) {
+    console.error('Invalid JWT:', error);
     return null;
   }
-
-  const user = await findUserById(session.userId);
-  return user ? { ...user, id: session.userId } : null;
 }

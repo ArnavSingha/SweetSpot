@@ -2,25 +2,22 @@
 
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { findUserByEmail } from '../data';
+import { findUserByEmail, createUser } from '../data';
 import { createSession, deleteSession } from '../auth';
 import { getSessionUser } from '@/lib/server/auth';
 import type { User } from '../types';
+import { verifyPassword, hashPassword } from '../server/password';
+import { loginSchema, registerSchema } from '../validation/userSchemas';
 
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-type LoginState = {
+type AuthState = {
   error?: string;
   success?: boolean;
 };
 
 export async function login(
-  prevState: LoginState,
+  prevState: AuthState,
   formData: FormData
-): Promise<LoginState> {
+): Promise<AuthState> {
   const validatedFields = loginSchema.safeParse(
     Object.fromEntries(formData.entries())
   );
@@ -32,17 +29,53 @@ export async function login(
   const { email, password } = validatedFields.data;
   const user = await findUserByEmail(email);
 
-  if (!user || user.passwordHash !== password) {
+  if (!user) {
     return { error: 'Invalid email or password.' };
   }
 
-  await createSession(user.id);
+  const isPasswordValid = await verifyPassword(password, user.passwordHash);
+  if (!isPasswordValid) {
+    return { error: 'Invalid email or password.' };
+  }
+
+  await createSession(user);
 
   if (user.role === 'admin') {
     redirect('/dashboard');
   } else {
     redirect('/');
   }
+}
+
+export async function register(
+  prevState: AuthState,
+  formData: FormData
+): Promise<AuthState> {
+    const validatedFields = registerSchema.safeParse(
+        Object.fromEntries(formData.entries())
+    );
+
+    if (!validatedFields.success) {
+        return { error: 'Invalid data provided.' };
+    }
+
+    const { name, email, password } = validatedFields.data;
+
+    const existingUser = await findUserByEmail(email);
+    if (existingUser) {
+        return { error: 'An account with this email already exists.' };
+    }
+
+    const passwordHash = await hashPassword(password);
+    const newUser = await createUser({
+        name,
+        email,
+        passwordHash,
+        role: 'user',
+    });
+
+    await createSession(newUser);
+    redirect('/');
 }
 
 export async function logout() {

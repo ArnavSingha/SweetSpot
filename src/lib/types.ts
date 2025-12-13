@@ -1,18 +1,25 @@
 export type Sweet = {
   id: string;
+  _id: string;
   name: string;
   category: string;
   price: number;
   quantity: number;
   imageUrl: string;
   imageHint: string;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type User = {
-  id:string;
+  id: string;
+  _id: string;
+  name: string;
   email: string;
   passwordHash: string;
   role: 'user' | 'admin';
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type CartItem = {
@@ -25,15 +32,10 @@ export type CartItem = {
 
 export type Purchase = {
   id: string;
+  _id: string;
   userId: string;
   sweetId: string;
   quantity: number;
   totalPrice: number;
-  purchaseDate: string;
-};
-
-export type Session = {
-  id: string;
-  userId: string;
-  expiresAt: Date;
+  purchaseDate: Date;
 };

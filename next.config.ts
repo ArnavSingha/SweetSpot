@@ -8,17 +8,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  webpack: (config) => {
-    config.resolve.alias['zod/v3'] = require.resolve('zod');
-    return config;
-  },
-  experimental: {
-    turbo: {
-      resolveAlias: {
-        'zod/v3': 'zod',
-      },
-    },
-  },
   images: {
     remotePatterns: [
       {
