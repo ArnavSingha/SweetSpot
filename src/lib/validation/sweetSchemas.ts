@@ -6,7 +6,6 @@ export const createSweetSchema = z.object({
   price: z.coerce.number().min(0.01, 'Price must be a positive number.'),
   quantity: z.coerce.number().int().min(0, 'Quantity must be a non-negative integer.'),
   imageUrl: z.string().url('Image URL must be a valid URL.'),
-  imageHint: z.string().optional(),
 });
 
 export type CreateSweetData = z.infer<typeof createSweetSchema>;
@@ -22,5 +21,5 @@ export const purchaseSchema = z.object({
 
 export const restockSchema = z.object({
     sweetId: z.string().min(1, "Sweet ID is required."),
-    quantity: z.number().int().min(1, "Restock quantity must be at least 1."),
+    quantity: z.coerce.number().int({ message: "Restock quantity must be a whole number." }).min(1, "Restock quantity must be at least 1."),
 });

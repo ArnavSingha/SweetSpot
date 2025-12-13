@@ -41,7 +41,7 @@ export async function login(
   await createSession(user);
 
   if (user.role === 'admin') {
-    redirect('/dashboard');
+    redirect('/admin');
   } else {
     redirect('/');
   }

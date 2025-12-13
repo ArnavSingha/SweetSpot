@@ -85,10 +85,10 @@ export async function getAllSweets(filters: { query?: string; category?: string 
      if(anySweets === 0) {
       try {
         const initialSweets: Omit<Sweet, 'id' | '_id' | 'createdAt' | 'updatedAt'>[] = [
-            { name: 'Chocolate Cake', category: 'Cake', price: 25, quantity: 10, imageUrl: 'https://picsum.photos/seed/1/400/300', imageHint: 'chocolate cake'},
-            { name: 'Strawberry Cheesecake', category: 'Cheesecake', price: 30, quantity: 5, imageUrl: 'https://picsum.photos/seed/2/400/300', imageHint: 'strawberry cheesecake' },
-            { name: 'Macarons', category: 'Pastry', price: 15, quantity: 20, imageUrl: 'https://picsum.photos/seed/3/400/300', imageHint: 'colorful macarons' },
-            { name: 'Vanilla Cupcakes', category: 'Cupcake', price: 12, quantity: 15, imageUrl: 'https://picsum.photos/seed/4/400/300', imageHint: 'vanilla cupcakes'},
+            { name: 'Chocolate Cake', category: 'Cake', price: 25, quantity: 10, imageUrl: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587', imageHint: 'chocolate cake'},
+            { name: 'Strawberry Cheesecake', category: 'Cheesecake', price: 30, quantity: 5, imageUrl: 'https://images.unsplash.com/photo-1565791549543-49d91a20f0b2', imageHint: 'strawberry cheesecake' },
+            { name: 'Macarons', category: 'Pastry', price: 15, quantity: 20, imageUrl: 'https://images.unsplash.com/photo-1558326567-98ae2405596b', imageHint: 'colorful macarons' },
+            { name: 'Vanilla Cupcakes', category: 'Cupcake', price: 12, quantity: 15, imageUrl: 'https://images.unsplash.com/photo-1614707267537-b85aaf00c8b7', imageHint: 'vanilla cupcakes'},
         ];
         await SweetModel.insertMany(initialSweets);
         sweetDocs = await SweetModel.find(mongoFilter);

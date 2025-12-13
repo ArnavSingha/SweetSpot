@@ -15,9 +15,9 @@ import { Separator } from '@/components/ui/separator';
 import { useCartStore } from '@/hooks/use-cart';
 import { ShoppingCart, Trash2, Minus, Plus } from 'lucide-react';
 import Image from 'next/image';
-import { useMemo } from 'react';
+import { useMemo, useTransition } from 'react';
 import SuggestedSweets from './suggested-sweets';
-import { checkout } from '@/lib/actions/sweets';
+import { purchaseSweetsAction } from '@/lib/actions/inventory';
 import { useToast } from '@/hooks/use-toast';
 import { useSessionUser } from '@/hooks/use-session-user';
 import Link from 'next/link';
@@ -73,10 +73,10 @@ function CartItem({ item }: { item: import('@/lib/types').CartItem }) {
 }
 
 export function ShoppingCartButton() {
-  const { cart } = useCartStore();
+  const { cart, clearCart } = useCartStore();
   const { user } = useSessionUser();
   const { toast } = useToast();
-
+  const [isPending, startTransition] = useTransition();
 
   const itemCount = useMemo(
     () => cart.reduce((sum, item) => sum + item.quantity, 0),
@@ -88,28 +88,22 @@ export function ShoppingCartButton() {
   );
 
   const handleCheckout = async () => {
-    if (!user) {
-      toast({
-        title: 'Please Login',
-        description: 'You need to be logged in to checkout.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    const result = await checkout(cart);
-    if (result.success) {
-      toast({
-        title: 'Checkout Successful',
-        description: 'Your order has been placed.',
-      });
-      useCartStore.getState().clearCart();
-    } else {
-      toast({
-        title: 'Checkout Failed',
-        description: result.error,
-        variant: 'destructive',
-      });
-    }
+    startTransition(async () => {
+      const result = await purchaseSweetsAction(cart);
+      if (result.success) {
+        toast({
+          title: 'Checkout Successful',
+          description: 'Your order has been placed.',
+        });
+        clearCart();
+      } else {
+        toast({
+          title: 'Checkout Failed',
+          description: result.error,
+          variant: 'destructive',
+        });
+      }
+    });
   };
 
   return (
@@ -149,8 +143,8 @@ export function ShoppingCartButton() {
                   <p>${subtotal.toFixed(2)}</p>
                 </div>
                 {user ? (
-                   <Button className="w-full" onClick={handleCheckout}>
-                     Checkout
+                   <Button className="w-full" onClick={handleCheckout} disabled={isPending}>
+                     {isPending ? 'Processing...' : 'Checkout'}
                    </Button>
                 ): (
                   <Button className="w-full" asChild>

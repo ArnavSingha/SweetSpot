@@ -1,50 +1,16 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
-import { createPurchase, getSweetById, updateSweet as dbUpdateSweet, createSweet as dbCreateSweet, deleteSweet as dbDeleteSweet } from '../data';
-import type { CartItem, Sweet } from '../types';
+import {
+  updateSweet as dbUpdateSweet,
+  createSweet as dbCreateSweet,
+  deleteSweet as dbDeleteSweet,
+} from '../data';
 import { getSessionUser } from '../server/auth';
-
-export async function checkout(cart: CartItem[]) {
-  const user = await getSessionUser();
-  if (!user) {
-    return { success: false, error: 'User not authenticated' };
-  }
-
-  try {
-    for (const item of cart) {
-      const sweet = await getSweetById(item.id);
-      if (!sweet || sweet.quantity < item.quantity) {
-        throw new Error(`Not enough stock for ${item.name}`);
-      }
-      
-      const newQuantity = sweet.quantity - item.quantity;
-      await dbUpdateSweet(sweet.id, { quantity: newQuantity });
-      
-      await createPurchase({
-        userId: user.id,
-        sweetId: sweet.id,
-        quantity: item.quantity,
-        totalPrice: item.price * item.quantity,
-      });
-    }
-    
-    revalidatePath('/');
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
-  }
-}
-
-const sweetSchema = z.object({
-  name: z.string().min(3, 'Name must be at least 3 characters'),
-  category: z.string().min(2, 'Category is required'),
-  price: z.coerce.number().min(0.01, 'Price must be positive'),
-  quantity: z.coerce.number().int().min(0, 'Quantity cannot be negative'),
-  imageUrl: z.string().url('Must be a valid URL'),
-  imageHint: z.string().optional(),
-});
+import {
+  createSweetSchema,
+  updateSweetSchema,
+} from '../validation/sweetSchemas';
 
 export async function createSweet(formData: FormData) {
   const user = await getSessionUser();
@@ -52,18 +18,32 @@ export async function createSweet(formData: FormData) {
     return { success: false, error: 'Unauthorized' };
   }
 
-  const validatedFields = sweetSchema.safeParse(Object.fromEntries(formData.entries()));
+  const validatedFields = createSweetSchema.safeParse(
+    Object.fromEntries(formData.entries())
+  );
 
   if (!validatedFields.success) {
-    return { success: false, error: 'Invalid data', issues: validatedFields.error.flatten().fieldErrors };
+    return {
+      success: false,
+      error: 'Invalid data provided.',
+      issues: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+  
+  const data = {
+    ...validatedFields.data,
+    imageHint:
+      validatedFields.data.name.toLowerCase().split(' ').slice(0, 2).join(' '),
+  };
+
+  try {
+    await dbCreateSweet(data);
+  } catch (e) {
+    console.error(e);
+    return { success: false, error: 'Database error: failed to create sweet.' };
   }
 
-  await dbCreateSweet({
-      ...validatedFields.data,
-      imageHint: validatedFields.data.imageHint || validatedFields.data.name.toLowerCase()
-  });
-
-  revalidatePath('/dashboard/sweets');
+  revalidatePath('/admin');
   revalidatePath('/');
   return { success: true };
 }
@@ -74,15 +54,28 @@ export async function updateSweet(sweetId: string, formData: FormData) {
     return { success: false, error: 'Unauthorized' };
   }
 
-  const validatedFields = sweetSchema.safeParse(Object.fromEntries(formData.entries()));
+  const validatedFields = updateSweetSchema.safeParse(
+    Object.fromEntries(formData.entries())
+  );
 
   if (!validatedFields.success) {
-    return { success: false, error: 'Invalid data', issues: validatedFields.error.flatten().fieldErrors };
+    return {
+      success: false,
+      error: 'Invalid data provided.',
+      issues: validatedFields.error.flatten().fieldErrors,
+    };
   }
 
-  await dbUpdateSweet(sweetId, validatedFields.data);
+  const dataToUpdate: any = validatedFields.data;
 
-  revalidatePath('/dashboard/sweets');
+  try {
+    await dbUpdateSweet(sweetId, dataToUpdate);
+  } catch (e) {
+    console.error(e);
+    return { success: false, error: 'Database error: failed to update sweet.' };
+  }
+
+  revalidatePath('/admin');
   revalidatePath('/');
   return { success: true };
 }
@@ -93,9 +86,14 @@ export async function deleteSweet(sweetId: string) {
     return { success: false, error: 'Unauthorized' };
   }
 
-  await dbDeleteSweet(sweetId);
+  try {
+    await dbDeleteSweet(sweetId);
+  } catch (e) {
+    console.error(e);
+    return { success: false, error: 'Database error: failed to delete sweet.' };
+  }
 
-  revalidatePath('/dashboard/sweets');
+  revalidatePath('/admin');
   revalidatePath('/');
   return { success: true };
 }

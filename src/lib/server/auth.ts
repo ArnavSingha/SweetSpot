@@ -1,4 +1,4 @@
-'server-only';
+'use server';
 import '@/lib/env';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
@@ -21,7 +21,8 @@ type DecodedToken = {
 };
 
 export async function getSessionUser(): Promise<User | null> {
-  const token = cookies().get(TOKEN_COOKIE_NAME)?.value;
+  const token = (await cookies()).get(TOKEN_COOKIE_NAME)?.value;
+
   if (!token) {
     return null;
   }
@@ -32,6 +33,8 @@ export async function getSessionUser(): Promise<User | null> {
     return user;
   } catch (error) {
     console.error('Invalid JWT:', error);
+    // If the token is invalid or expired, ensure it's deleted.
+    (await cookies()).set(TOKEN_COOKIE_NAME, '', { expires: new Date(0) });
     return null;
   }
 }
