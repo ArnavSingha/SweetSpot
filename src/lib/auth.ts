@@ -2,15 +2,20 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import {
   createSession as dbCreateSession,
-  getSession as dbGetSession,
   deleteSession as dbDeleteSession,
 } from './data';
+import { findUserById } from './data';
 
 const SESSION_COOKIE_NAME = 'sweetspot_session';
 const SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days
 
 export async function createSession(userId: string) {
-  const session = await dbCreateSession(userId, SESSION_DURATION * 1000);
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new Error('Cannot create session for non-existent user');
+  }
+
+  const session = await dbCreateSession(user.id, SESSION_DURATION * 1000);
   cookies().set(SESSION_COOKIE_NAME, session.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

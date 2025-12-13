@@ -20,5 +20,5 @@ export async function getSessionUser(): Promise<User | null> {
   }
 
   const user = await findUserById(session.userId);
-  return user || null;
+  return user ? { ...user, id: session.userId } : null;
 }

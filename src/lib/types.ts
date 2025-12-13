@@ -9,7 +9,7 @@ export type Sweet = {
 };
 
 export type User = {
-  id: string;
+  id:string;
   email: string;
   passwordHash: string;
   role: 'user' | 'admin';
