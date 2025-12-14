@@ -144,11 +144,51 @@ The .env file is required to run the application. It stores sensitive credential
 | JWT_SECRET    | *Required*. A long, secret, and random string used to sign and verify JWTs for session management. You can generate one using openssl rand -hex 32. | a_very_long_and_secure_random_string_of_characters   |
 | GEMINI_API_KEY | *Required for AI features*. Your API key for the Google AI (Gemini) models, used for generating sweet suggestions.                      | AIzaSy...                                         |
 
+---
 
 
 
+## Database Models & Server Actions
 
+### Database Models
 
+The application uses Mongoose to define schemas for three core collections in MongoDB.
 
+1.  *User Model*:
+    - name (String): The user's full name.
+    - email (String, unique): The user's email address, used for login.
+    - passwordHash (String): The user's securely hashed password.
+    - role (String): The user's role, either 'user' or 'admin'.
+
+2.  *Sweet Model*:
+    - name (String, unique): The name of the sweet product.
+    - category (String): The category of the sweet (e.g., "Cake", "Cookie").
+    - price (Number): The price of the sweet.
+    - quantity (Number): The current stock level.
+    - imageUrl (String): A URL pointing to the product image.
+    - imageHint (String): A short description for AI image search purposes.
+
+3.  *Purchase Model*:
+    - userId (ObjectId): A reference to the User who made the purchase.
+    - sweetId (ObjectId): A reference to the Sweet that was purchased.
+    - quantity (Number): The number of units purchased.
+    - totalPrice (Number): The total price for this line item.
+    - purchaseDate (Date): The timestamp of the purchase.
+
+### Server Actions Overview
+
+Server Actions are asynchronous functions that execute on the server and are the primary way the client mutates data.
+
+| Action                  | Description                                            | Inputs              | Auth Required |
+| ----------------------- | ------------------------------------------------------ | ------------------- | ------------- |
+| register              | Creates a new user account and starts a session.       | FormData          | No            |
+| login                 | Authenticates a user and starts a session.             | FormData          | No            |
+| logout                | Deletes the user session cookie and logs them out.     | None                | Yes           |
+| createSweet           | Adds a new sweet to the inventory.                     | FormData          | Admin         |
+| updateSweet           | Modifies the details of an existing sweet.             | sweetId, FormData | Admin         |
+| deleteSweet           | Permanently removes a sweet from the inventory.        | sweetId           | Admin         |
+| purchaseSweetsAction  | Processes a user's cart, updating stock levels.        | CartItem[]        | User          |
+| restockSweetAction    | Increases the quantity of a specific sweet.            | FormData          | Admin         |
+| getSuggestedSweets    | Gets AI-powered product recommendations.               | string[] (names)  | No            |
 
 ---
