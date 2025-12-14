@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useCartStore } from '@/hooks/use-cart';
 import { getSuggestedSweets } from '@/lib/actions/ai';
 import { Button } from './ui/button';
 import { Wand2 } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
+import { getSweetAction } from '@/lib/actions/sweets';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SuggestedSweets() {
   const { cart, addToCart } = useCartStore();
@@ -13,6 +15,8 @@ export default function SuggestedSweets() {
     { id: string; name: string }[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchSuggestions() {
@@ -34,30 +38,43 @@ export default function SuggestedSweets() {
         setSuggestions([]);
       }
     }
-    
-    // Debounce the call to avoid excessive API calls
+
     const handler = setTimeout(() => {
-        fetchSuggestions();
+      fetchSuggestions();
     }, 500);
 
     return () => {
-        clearTimeout(handler);
-    }
-
+      clearTimeout(handler);
+    };
   }, [cart]);
+
+  const handleAddSuggestion = (suggestionId: string) => {
+    startTransition(async () => {
+      const sweet = await getSweetAction(suggestionId);
+      if (sweet) {
+        addToCart(sweet);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Could not find the sweet.',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
 
   if (cart.length === 0) return null;
 
   return (
     <div className="my-4">
-      <h4 className="flex items-center text-sm font-semibold mb-2">
-        <Wand2 className="h-4 w-4 mr-2" />
+      <h4 className="mb-2 flex items-center text-sm font-semibold">
+        <Wand2 className="mr-2 h-4 w-4" />
         You might also like
       </h4>
       {loading ? (
         <div className="space-y-2">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
         </div>
       ) : suggestions.length > 0 ? (
         <div className="flex flex-wrap gap-2">
@@ -66,14 +83,17 @@ export default function SuggestedSweets() {
               key={suggestion.id}
               variant="outline"
               size="sm"
-              onClick={() => addToCart({ id: suggestion.id } as any)} // A bit of a hack, addToCart expects a full Sweet
+              onClick={() => handleAddSuggestion(suggestion.id)}
+              disabled={isPending}
             >
               {suggestion.name}
             </Button>
           ))}
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground">No suggestions right now.</p>
+        <p className="text-xs text-muted-foreground">
+          No suggestions right now.
+        </p>
       )}
     </div>
   );

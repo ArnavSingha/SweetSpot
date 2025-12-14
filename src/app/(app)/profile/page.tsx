@@ -12,6 +12,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default async function ProfilePage() {
   const user = await getSessionUser();
@@ -30,6 +33,14 @@ export default async function ProfilePage() {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
+       <div className="mb-4">
+        <Button variant="outline" asChild>
+          <Link href="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Store
+          </Link>
+        </Button>
+      </div>
       <header className="mb-8 flex items-center gap-4">
         <Avatar className="h-20 w-20">
           <AvatarFallback className="text-3xl">

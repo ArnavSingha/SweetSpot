@@ -5,6 +5,7 @@ import {
   updateSweet as dbUpdateSweet,
   createSweet as dbCreateSweet,
   deleteSweet as dbDeleteSweet,
+  getSweetById,
 } from '../data';
 import { getSessionUser } from '../server/auth';
 import {
@@ -96,4 +97,14 @@ export async function deleteSweet(sweetId: string) {
   revalidatePath('/admin');
   revalidatePath('/');
   return { success: true };
+}
+
+export async function getSweetAction(sweetId: string) {
+    try {
+        const sweet = await getSweetById(sweetId);
+        return sweet;
+    } catch(e) {
+        console.error(e);
+        return null;
+    }
 }
