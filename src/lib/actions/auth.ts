@@ -12,6 +12,7 @@ import { loginSchema, registerSchema } from '../validation/userSchemas';
 type AuthState = {
   error?: string;
   success?: boolean;
+  issues?: Record<string, string[]>;
 };
 
 export async function login(
@@ -48,7 +49,6 @@ export async function login(
 }
 
 export async function register(
-  prevState: AuthState,
   formData: FormData
 ): Promise<AuthState> {
     const validatedFields = registerSchema.safeParse(
@@ -56,7 +56,10 @@ export async function register(
     );
 
     if (!validatedFields.success) {
-        return { error: 'Invalid data provided.' };
+        return { 
+          error: 'Invalid data provided.',
+          issues: validatedFields.error.flatten().fieldErrors,
+        };
     }
 
     const { name, email, password } = validatedFields.data;
