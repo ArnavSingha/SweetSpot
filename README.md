@@ -192,3 +192,42 @@ Server Actions are asynchronous functions that execute on the server and are the
 | getSuggestedSweets    | Gets AI-powered product recommendations.               | string[] (names)  | No            |
 
 ---
+
+
+## UI / UX Overview
+
+The user interface is designed to be clean, modern, and responsive, using a consistent design system built on TailwindCSS and ShadCN UI.
+
+- *Homepage (Storefront)*: Displays all available sweets in a responsive grid. Includes client-rendered search and filter controls that update the URL and trigger a server-side re-render of the product list.
+- *Admin Dashboard*: A protected route for admins that shows all inventory in a card-based layout. It provides access to CRUD functionality via dialogs/modals.
+- *CRUD Forms*: All forms for creating and editing sweets are rendered inside ShadCN Dialog components. They use react-hook-form for client-side validation and display server-side errors gracefully.
+- *Shopping Cart*: A client-side cart implemented in a Sheet component. It uses Zustand for state management and persists the cart contents in local storage.
+- *Profile Page: A server-rendered page that displays user information and their complete purchase history. For admins, this page shows a history of *all user purchases.
+- *Loading & Feedback*:
+  - A full-page loader provides visual feedback during page transitions.
+  - Toast notifications are used to inform users of the success or failure of their actions (e.g., "Sweet updated successfully," "Not enough stock").
+- *Responsive Design*: The layout adapts smoothly from mobile to desktop screens, with components like the header navigation collapsing into a mobile-friendly menu.
+
+---
+
+## Deployment Guide
+
+This Next.js application is configured for deployment on modern hosting platforms that support Node.js, such as Vercel, Netlify, or AWS Amplify.
+
+### General Steps
+
+1.  *Connect Your Git Repository*: Link your hosting provider to the GitHub repository containing your project.
+2.  *Configure Build Settings*:
+    - *Build Command*: npm run build
+    - *Output Directory*: .next
+    - *Node.js Version*: 18.x or 20.x
+3.  *Set Environment Variables*: In your hosting provider's dashboard, add the same environment variables defined in your local .env file (MONGODB_URI, JWT_SECRET, GEMINI_API_KEY). This is a critical security step.
+4.  *Deploy*: Trigger a deployment. The hosting platform will automatically build and deploy your application.
+
+### Platform-Specific Notes
+
+- *Vercel*: As the creators of Next.js, Vercel offers seamless, zero-config deployment. It will automatically detect the project settings.
+- *Server Actions*: Server Actions are designed to work perfectly in serverless environments. The hosting platform will deploy them as isolated serverless functions that are invoked by the client.
+- *MongoDB Atlas*: For production, ensure your MongoDB Atlas cluster's network access rules are configured to allow connections from your deployment environment. A common practice is to allow access from all IP addresses (0.0.0.0/0) and rely on a strong database password for security.
+
+---
