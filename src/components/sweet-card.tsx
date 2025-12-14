@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/hooks/use-cart';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
+import { useSessionUser } from '@/hooks/use-session-user';
 
 type SweetCardProps = {
   sweet: Sweet;
@@ -20,9 +21,21 @@ type SweetCardProps = {
 
 export default function SweetCard({ sweet }: SweetCardProps) {
   const { cart, addToCart, updateQuantity, decrementQuantity } = useCartStore();
+  const { user } = useSessionUser();
   const isOutOfStock = sweet.quantity <= 0;
+  const isAdmin = user?.role === 'admin';
 
   const cartItem = cart.find((item) => item.id === sweet.id);
+
+  const handleAddToCart = () => {
+    if (isAdmin) return;
+    addToCart(sweet);
+  };
+  
+  const handleDecrement = () => {
+    if (isAdmin) return;
+    decrementQuantity(sweet.id);
+  }
 
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:shadow-lg">
@@ -63,7 +76,8 @@ export default function SweetCard({ sweet }: SweetCardProps) {
                 variant="outline"
                 size="icon"
                 className="h-9 w-9"
-                onClick={() => decrementQuantity(sweet.id)}
+                onClick={handleDecrement}
+                disabled={isAdmin}
               >
                 <Minus className="h-4 w-4" />
               </Button>
@@ -72,16 +86,16 @@ export default function SweetCard({ sweet }: SweetCardProps) {
                 variant="outline"
                 size="icon"
                 className="h-9 w-9"
-                onClick={() => addToCart(sweet)}
-                disabled={cartItem.quantity >= sweet.quantity}
+                onClick={handleAddToCart}
+                disabled={cartItem.quantity >= sweet.quantity || isAdmin}
               >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
           ) : (
             <Button
-              onClick={() => addToCart(sweet)}
-              disabled={isOutOfStock}
+              onClick={handleAddToCart}
+              disabled={isOutOfStock || isAdmin}
               size="sm"
               aria-label={`Add ${sweet.name} to cart`}
             >

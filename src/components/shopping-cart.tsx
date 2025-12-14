@@ -78,6 +78,8 @@ export function ShoppingCartButton() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
+  const isAdmin = user?.role === 'admin';
+
   const itemCount = useMemo(
     () => cart.reduce((sum, item) => sum + item.quantity, 0),
     [cart]
@@ -88,6 +90,15 @@ export function ShoppingCartButton() {
   );
 
   const handleCheckout = async () => {
+    if (isAdmin) {
+      toast({
+        title: 'Action Not Allowed',
+        description: 'Admins cannot make purchases.',
+        variant: 'destructive'
+      })
+      return;
+    }
+
     startTransition(async () => {
       const result = await purchaseSweetsAction(cart);
       if (result.success) {
@@ -111,7 +122,7 @@ export function ShoppingCartButton() {
       <SheetTrigger asChild>
         <Button variant="outline" size="icon" className="relative">
           <ShoppingCart className="h-5 w-5" />
-          {itemCount > 0 && (
+          {itemCount > 0 && !isAdmin && (
             <Badge
               variant="default"
               className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs"
@@ -125,7 +136,7 @@ export function ShoppingCartButton() {
         <SheetHeader>
           <SheetTitle>Your Cart</SheetTitle>
         </SheetHeader>
-        {cart.length > 0 ? (
+        {cart.length > 0 && !isAdmin ? (
           <>
             <ScrollArea className="flex-1 -mx-6">
               <div className="px-6">
@@ -143,13 +154,16 @@ export function ShoppingCartButton() {
                   <p>Rs.{subtotal.toFixed(2)}</p>
                 </div>
                 {user ? (
-                   <Button className="w-full" onClick={handleCheckout} disabled={isPending}>
+                   <Button className="w-full" onClick={handleCheckout} disabled={isPending || isAdmin}>
                      {isPending ? 'Processing...' : 'Checkout'}
                    </Button>
                 ): (
                   <Button className="w-full" asChild>
                     <Link href="/login">Login to Checkout</Link>
                   </Button>
+                )}
+                {isAdmin && (
+                  <p className="text-center text-sm text-muted-foreground">Admins cannot make purchases.</p>
                 )}
               </div>
             </SheetFooter>
@@ -159,7 +173,7 @@ export function ShoppingCartButton() {
             <ShoppingCart className="h-16 w-16 text-muted-foreground/50" />
             <h3 className="mt-4 text-lg font-semibold">Your cart is empty</h3>
             <p className="text-sm text-muted-foreground">
-              Add some sweets to get started!
+              {isAdmin ? "You are logged in as an admin." : "Add some sweets to get started!"}
             </p>
           </div>
         )}

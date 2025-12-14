@@ -150,8 +150,14 @@ export async function createPurchase(purchaseData: Omit<Purchase, 'id' | '_id' |
 export async function getPurchasesByUserId(userId: string): Promise<(Purchase & { id: string })[]> {
   await dbConnect();
   if (!mongoose.Types.ObjectId.isValid(userId)) return [];
-  const purchasesDocs = await PurchaseModel.find({ userId });
+  const purchasesDocs = await PurchaseModel.find({ userId }).sort({ purchaseDate: -1 });;
   return purchasesDocs.map(doc => toJSON(doc));
+}
+
+export async function getAllPurchases(): Promise<(Purchase & { id: string })[]> {
+    await dbConnect();
+    const purchasesDocs = await PurchaseModel.find({}).sort({ purchaseDate: -1 });
+    return purchasesDocs.map(doc => toJSON(doc));
 }
 
 export async function getSweetCategories(): Promise<string[]> {
