@@ -47,7 +47,7 @@ export default function AdminSweetCard({ sweet }: { sweet: Sweet }) {
           </p>
         </div>
         <p className="mt-2 text-lg font-semibold text-primary">
-          ${sweet.price.toFixed(2)}
+          Rs.{sweet.price.toFixed(2)}
         </p>
       </CardContent>
       <CardFooter className="p-2 pt-0 border-t">

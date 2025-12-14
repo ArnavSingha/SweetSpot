@@ -12,7 +12,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@genkit-ai/core": "^1.26.0",
     "@genkit-ai/google-genai": "^1.20.0",
     "@genkit-ai/next": "^1.20.0",
     "@hookform/resolvers": "^4.1.3",
@@ -57,8 +56,9 @@
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^4.1.13",
-    "zod-to-json-schema": "^3.24.1",
+    "use-debounce": "^10.0.1",
+    "zod": "^3.24.2",
+    "zod-to-json-schema": "^3.24.6",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

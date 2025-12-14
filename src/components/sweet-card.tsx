@@ -12,15 +12,17 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/hooks/use-cart';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Plus, Minus } from 'lucide-react';
 
 type SweetCardProps = {
   sweet: Sweet;
 };
 
 export default function SweetCard({ sweet }: SweetCardProps) {
-  const { addToCart } = useCartStore();
+  const { cart, addToCart, updateQuantity, decrementQuantity } = useCartStore();
   const isOutOfStock = sweet.quantity <= 0;
+
+  const cartItem = cart.find((item) => item.id === sweet.id);
 
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:shadow-lg">
@@ -53,17 +55,40 @@ export default function SweetCard({ sweet }: SweetCardProps) {
       <CardFooter className="p-4 pt-0">
         <div className="flex w-full items-center justify-between">
           <p className="text-lg font-semibold text-primary-foreground/80 bg-primary/80 px-2 py-1 rounded-md">
-            ${sweet.price.toFixed(2)}
+            Rs.{sweet.price.toFixed(2)}
           </p>
-          <Button
-            onClick={() => addToCart(sweet)}
-            disabled={isOutOfStock}
-            size="sm"
-            aria-label={`Add ${sweet.name} to cart`}
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Add to Cart
-          </Button>
+          {cartItem ? (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => decrementQuantity(sweet.id)}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <span className="font-bold text-lg w-4 text-center">{cartItem.quantity}</span>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => addToCart(sweet)}
+                disabled={cartItem.quantity >= sweet.quantity}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              onClick={() => addToCart(sweet)}
+              disabled={isOutOfStock}
+              size="sm"
+              aria-label={`Add ${sweet.name} to cart`}
+            >
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Add to Cart
+            </Button>
+          )}
         </div>
       </CardFooter>
     </Card>

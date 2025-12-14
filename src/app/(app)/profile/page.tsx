@@ -62,7 +62,7 @@ export default async function ProfilePage() {
                   <TableRow key={p.id}>
                     <TableCell>{p.sweetName}</TableCell>
                     <TableCell>{p.quantity}</TableCell>
-                    <TableCell>${p.totalPrice.toFixed(2)}</TableCell>
+                    <TableCell>Rs.{p.totalPrice.toFixed(2)}</TableCell>
                     <TableCell>
                       {new Date(p.purchaseDate).toLocaleDateString()}
                     </TableCell>

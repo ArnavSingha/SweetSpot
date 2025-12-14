@@ -10,10 +10,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User, LayoutDashboard } from 'lucide-react';
+import { User, LayoutDashboard } from 'lucide-react';
 import { Logo } from './icons';
 import { ShoppingCartButton } from './shopping-cart';
-import { logout } from '@/lib/actions/auth';
+import LogoutButton from './auth/logout-button';
 
 async function UserButton() {
   const user = await getSessionUser();
@@ -65,14 +65,7 @@ async function UserButton() {
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <form action={logout} className="w-full">
-          <button type="submit" className="w-full">
-            <DropdownMenuItem>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </button>
-        </form>
+        <LogoutButton />
       </DropdownMenuContent>
     </DropdownMenu>
   );

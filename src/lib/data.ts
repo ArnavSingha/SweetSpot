@@ -50,11 +50,11 @@ export async function createUser(data: Omit<RegisterData, 'password'> & { passwo
 }
 
 // Sweet Functions
-export async function getAllSweets(filters: { query?: string; category?: string } = {}): Promise<(Sweet & { id: string })[]> {
+export async function getAllSweets(filters: { query?: string; category?: string; sort?: string } = {}): Promise<(Sweet & { id: string })[]> {
   await dbConnect();
   const mongoFilter: any = {};
   if (filters.query) {
-    mongoFilter.name = { $regex: filters.query, $options: 'i' };
+    mongoFilter.name = { $regex: `^${filters.query}`, $options: 'i' };
   }
   if (filters.category && filters.category !== 'all') {
     mongoFilter.category = filters.category;
@@ -77,10 +77,17 @@ export async function getAllSweets(filters: { query?: string; category?: string 
       console.error('Failed to create or update admin user', e);
   }
 
+  const sortOptions: any = {};
+  if (filters.sort === 'lth') {
+    sortOptions.price = 1;
+  } else if (filters.sort === 'htl') {
+    sortOptions.price = -1;
+  }
 
-  let sweetDocs = await SweetModel.find(mongoFilter);
 
-  if (sweetDocs.length === 0) {
+  let sweetDocs = await SweetModel.find(mongoFilter).sort(sortOptions);
+
+  if (sweetDocs.length === 0 && !filters.query && !filters.category) {
      const anySweets = await SweetModel.countDocuments();
      if(anySweets === 0) {
       try {
@@ -91,10 +98,10 @@ export async function getAllSweets(filters: { query?: string; category?: string 
             { name: 'Vanilla Cupcakes', category: 'Cupcake', price: 12, quantity: 15, imageUrl: 'https://images.unsplash.com/photo-1614707267537-b85aaf00c8b7', imageHint: 'vanilla cupcakes'},
         ];
         await SweetModel.insertMany(initialSweets);
-        sweetDocs = await SweetModel.find(mongoFilter);
+        sweetDocs = await SweetModel.find(mongoFilter).sort(sortOptions);
       } catch (e) {
          if (e instanceof Error && (e as any).code === 11000) { 
-            sweetDocs = await SweetModel.find(mongoFilter);
+            sweetDocs = await SweetModel.find(mongoFilter).sort(sortOptions);
          } else {
            console.error('Failed to insert initial sweets', e);
          }

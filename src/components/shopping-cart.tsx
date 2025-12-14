@@ -36,7 +36,7 @@ function CartItem({ item }: { item: import('@/lib/types').CartItem }) {
       />
       <div className="flex-1">
         <h4 className="font-semibold">{item.name}</h4>
-        <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+        <p className="text-sm text-muted-foreground">Rs.{item.price.toFixed(2)}</p>
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button
@@ -140,7 +140,7 @@ export function ShoppingCartButton() {
               <div className="w-full space-y-4">
                 <div className="flex items-center justify-between font-semibold">
                   <p>Subtotal</p>
-                  <p>${subtotal.toFixed(2)}</p>
+                  <p>Rs.{subtotal.toFixed(2)}</p>
                 </div>
                 {user ? (
                    <Button className="w-full" onClick={handleCheckout} disabled={isPending}>

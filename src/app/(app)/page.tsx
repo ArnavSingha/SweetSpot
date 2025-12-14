@@ -1,16 +1,8 @@
 import SweetCard from '@/components/sweet-card';
 import { getAllSweets, getSweetCategories } from '@/lib/data';
 import type { Sweet } from '@/lib/types';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
 import { Suspense } from 'react';
+import SearchControls from '@/components/search-controls';
 
 function SweetsGrid({ sweets }: { sweets: Sweet[] }) {
   if (sweets.length === 0) {
@@ -42,8 +34,9 @@ export default async function Home({
 }) {
   const query = (searchParams?.query as string) || '';
   const category = (searchParams?.category as string) || 'all';
+  const sort = (searchParams?.sort as string) || 'default';
 
-  const sweets = await getAllSweets({ query, category });
+  const sweets = await getAllSweets({ query, category, sort });
   const categories = await getSweetCategories();
 
   return (
@@ -58,33 +51,12 @@ export default async function Home({
       </header>
 
       <div className="mb-8 flex flex-col gap-4 md:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search for sweets..."
-            className="w-full pl-10"
-            defaultValue={query}
-            name="query"
-            form="search-form"
-          />
-        </div>
-        <Select defaultValue={category} name="category" form="search-form">
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder="Filter by category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <form id="search-form" className="hidden">
-           <button type="submit">Submit</button>
-        </form>
+        <SearchControls
+          categories={categories}
+          initialQuery={query}
+          initialCategory={category}
+          initialSort={sort}
+        />
       </div>
       <Suspense fallback={<p>Loading sweets...</p>}>
         <SweetsGrid sweets={sweets} />

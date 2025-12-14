@@ -19,7 +19,7 @@ export async function createSession(user: User) {
 
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
 
-  cookies().set(TOKEN_COOKIE_NAME, token, {
+  (await cookies()).set(TOKEN_COOKIE_NAME, token, {
     httpOnly: true,
     secure: false,
     expires: expiresAt,
@@ -29,7 +29,7 @@ export async function createSession(user: User) {
 }
 
 export async function deleteSession() {
-  cookies().set(TOKEN_COOKIE_NAME, '', {
+  (await cookies()).set(TOKEN_COOKIE_NAME, '', {
     httpOnly: true,
     expires: new Date(0),
   });
