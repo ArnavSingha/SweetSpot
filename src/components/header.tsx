@@ -14,6 +14,7 @@ import { User, LayoutDashboard } from 'lucide-react';
 import { Logo } from './icons';
 import { ShoppingCartButton } from './shopping-cart';
 import LogoutButton from './auth/logout-button';
+import { ThemeToggle } from './theme-toggle';
 
 async function UserButton() {
   const user = await getSessionUser();
@@ -86,6 +87,7 @@ export default function Header() {
         
         <div className="flex flex-1 items-center justify-end space-x-2">
             <ShoppingCartButton />
+            <ThemeToggle />
             <UserButton />
         </div>
       </div>

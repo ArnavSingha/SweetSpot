@@ -3,6 +3,9 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/components/cart-provider';
+import { ThemeProvider } from '@/components/theme-provider';
+import { PageLoader } from '@/components/page-loader';
+import AnimatedBackground from '@/components/animated-background';
 
 export const metadata: Metadata = {
   title: 'SweetSpot',
@@ -31,10 +34,19 @@ export default function RootLayout({
       <body
         className={cn('min-h-screen bg-background font-body antialiased')}
       >
-        <CartProvider>
-          {children}
-          <Toaster />
-        </CartProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <CartProvider>
+            <PageLoader />
+            <AnimatedBackground />
+            <div className="relative z-10">{children}</div>
+            <Toaster />
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

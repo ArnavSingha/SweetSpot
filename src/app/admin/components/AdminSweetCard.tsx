@@ -20,7 +20,7 @@ export default function AdminSweetCard({ sweet }: { sweet: Sweet }) {
   const isLowStock = sweet.quantity <= 5;
 
   return (
-    <Card className="flex flex-col overflow-hidden transition-all hover:shadow-lg">
+    <Card className="flex flex-col overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02]">
       <CardHeader className="p-0">
         <div className="relative aspect-[4/3] w-full">
           <Image

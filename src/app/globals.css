@@ -74,5 +74,42 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(hsl(var(--foreground)) 0.5px, transparent 0.5px);
+    background-size: 15px 15px;
+    background-position: -7.5px -7.5px;
+  }
+}
+
+
+@layer utilities {
+  @keyframes blob-1 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(20vw, -15vh) scale(1.1);
+    }
+    50% {
+      transform: translate(5vw, 20vh) scale(0.9);
+    }
+    75% {
+      transform: translate(-15vw, -10vh) scale(1.05);
+    }
+  }
+  @keyframes blob-2 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(-20vw, 10vh) scale(0.9);
+    }
+    50% {
+      transform: translate(10vw, -15vh) scale(1.1);
+    }
+    75% {
+      transform: translate(15vw, 5vh) scale(1);
+    }
   }
 }
