@@ -231,3 +231,30 @@ This Next.js application is configured for deployment on modern hosting platform
 - *MongoDB Atlas*: For production, ensure your MongoDB Atlas cluster's network access rules are configured to allow connections from your deployment environment. A common practice is to allow access from all IP addresses (0.0.0.0/0) and rely on a strong database password for security.
 
 ---
+
+
+## Roadmap & Future Improvements
+
+While SweetSpot is a feature-complete application, there are many potential enhancements that could be added:
+
+- *Full Cart System*: Implement a database-backed cart so a user's cart persists across devices.
+- *Payment Integration*: Integrate a payment provider like [Stripe](https://stripe.com/) to handle real transactions.
+- *Advanced Filtering*: Add more complex filtering options, such as by price range, tags, or popularity.
+- *Image Uploads*: Allow admins to upload product images directly instead of pasting URLs, using a service like Cloudinary or Firebase Storage.
+- *Admin Analytics*: Create a dashboard with charts and stats showing sales trends, popular items, and revenue.
+- *User Reviews & Ratings*: Allow users to rate and review sweets.
+
+---
+
+## My AI Usage
+
+This project was built in collaboration with an AI coding partner. Here’s a breakdown of how AI was leveraged:
+
+*   *AI Tool Used*: Google's Gemini
+
+*   *How it was Used*:
+    *   *Initial Scaffolding and Boilerplate*: Generated the initial Next.js project structure, including setting up TailwindCSS, ShadCN UI components, and basic layouts.
+    *   *Component Generation*: Created React components (both Server and Client) based on high-level descriptions, such as product cards, forms, and navigation headers.
+     *   *Generative AI Features*: Integrated Genkit to create the "Suggested Sweets" feature, which uses the Gemini model to provide product recommendations to users.
+      *   *Debugging and Refactoring*: Identified and fixed bugs, such as dependency conflicts in package.json, and refactored code for better organization and performance.
+      *   *Documentation*: Generated this README.md file and other explanatory comments in the code to ensure the project is well-documented and easy to understand.
