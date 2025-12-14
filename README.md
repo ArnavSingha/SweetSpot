@@ -65,4 +65,90 @@ The application functions as a digital storefront for a sweet shop, allowing cus
 
 ---
 
+---
 
+## Project Architecture Overview
+
+SweetSpot is built as a *monolithic full-stack application* using the Next.js App Router. This architecture simplifies development and deployment by removing the need for a separate backend server and API layer.
+
+### Core Architectural Concepts
+
+- *App Router*: The file system-based router (app/) is used for all routes. Folders define URL segments, and special files like page.tsx and layout.tsx define the UI for those segments.
+- *React Server Components (RSCs)*: By default, all components within the App Router are RSCs. They run exclusively on the server, allowing them to directly and securely access the database or other server-side resources. This is how the main storefront page fetches and renders the list of sweets.
+- *Client Components*: Components requiring interactivity (e.g., forms, buttons, state management) are marked with the 'use client' directive. This code runs on both the server (for the initial render) and the client, enabling traditional React interactivity.
+- *Server Actions*: Instead of creating API endpoints (/api/...), we use Server Actions for all data mutations (e.g., logging in, creating a sweet, making a purchase). These are functions defined on the server ('use server') that can be called directly from Client Components, typically during form submissions or button clicks. Next.js handles the RPC-like communication automatically.
+- *Data Access Layer*: Data fetching logic is co-located within src/lib/data.ts. These server-side functions use the official MongoDB driver (via Mongoose) to interact with the database. Because Server Components and Server Actions run on the server, they can safely call these functions directly.
+- *Session Management*: User sessions are managed using JSON Web Tokens (JWTs). Upon successful login, a JWT is generated, signed with a secret key, and stored in a secure, httpOnly cookie. On subsequent requests, the server validates this cookie to identify the authenticated user.
+
+This monolithic approach streamlines the development workflow, reduces boilerplate code, and provides excellent performance by leveraging server-rendering and minimizing client-side JavaScript.
+
+---
+
+## Developer Setup Guide
+
+Follow these instructions to get the project running on your local machine for development and testing.
+
+### 1. Prerequisites
+
+- *Node.js*: LTS version (18.x or 20.x recommended)
+- *Package Manager*: npm, yarn, or pnpm
+- *MongoDB*: A running instance of MongoDB. You can use a local installation or a free cloud-based service like [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register).
+
+### 2. Installation
+
+1.  *Clone the Repository*:
+    bash
+    git clone https://github.com/ArnavSingha/SweetSpot.git
+    cd sweetspot
+    
+
+2.  *Install Dependencies*:
+    bash
+    npm install
+    
+
+3.  *Create an Environment File*:
+    Create a .env file in the root of your project by copying the example:
+    bash
+    cp .env.example .env
+    
+    Now, open the .env file and fill in the required environment variables (see the section below).
+
+### 3. Running the Application
+
+1.  *Start the Development Server*:
+    This command starts the Next.js development server, typically on http://localhost:3000.
+    bash
+    npm run dev
+    
+
+2.  *Running a Production Build*:
+    To test a production-ready version of your app locally, run the following commands:
+    bash
+    # 1. Build the application for production
+    npm run build
+
+    # 2. Start the production server
+    npm run start
+    
+---
+
+
+## Environment Variable Documentation
+
+The .env file is required to run the application. It stores sensitive credentials and configuration details.
+
+| Variable        | Description                                                                                                                              | Example Value                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| MONGODB_URI   | *Required*. The connection string for your MongoDB database. Ensure you include the database name in the URI.                          | mongodb+srv://user:pass@cluster.mongodb.net/sweetspot |
+| JWT_SECRET    | *Required*. A long, secret, and random string used to sign and verify JWTs for session management. You can generate one using openssl rand -hex 32. | a_very_long_and_secure_random_string_of_characters   |
+| GEMINI_API_KEY | *Required for AI features*. Your API key for the Google AI (Gemini) models, used for generating sweet suggestions.                      | AIzaSy...                                         |
+
+
+
+
+
+
+
+
+---
