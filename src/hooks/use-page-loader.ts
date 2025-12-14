@@ -35,7 +35,12 @@ export function usePageLoader() {
     };
     
     // Listen for form submits as well
-    const handleFormSubmit = () => {
+    const handleFormSubmit = (event: Event) => {
+        const target = event.target as HTMLElement;
+        // Don't show loader for forms inside a dialog
+        if (target.closest('[role="dialog"]')) {
+            return;
+        }
         setIsLoading(true);
     }
 
