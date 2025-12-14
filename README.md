@@ -8,8 +8,6 @@ The application functions as a digital storefront for a sweet shop, allowing cus
 
 ## Live Demo
 
-*[➡️ View Live Demo](https://your-live-demo-url-here.com)*
-
 *[➡️ Video Demo](https://drive.google.com/file/d/1TTV4sqFctrv5AFRw-HHoV65BipTOfGDV/view?usp=sharing)*
 
 (Note: Admin credentials are: admin123@gmail.com / Admin@123)
