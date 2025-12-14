@@ -59,9 +59,9 @@ The application functions as a digital storefront for a sweet shop, allowing cus
 
 | Homepage Storefront                                                                                     | Admin Dashboard                                                                                       |
 | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| ![SweetSpot Homepage](images/indexpageorafter%20login.jpeg) | ![SweetSpot Admin](images/admin_dashbord.jpeg)       |
+| ![SweetSpot Homepage](image/indexpageorafter%20login.jpeg) | ![SweetSpot Admin](image/admin_dashbord.jpeg)       |
 | *Shopping Cart with AI Suggestions*                                                                      | *User Profile Page*                                                                                 |
-| ![SweetSpot Cart](images/card.jpeg)         | ![SweetSpot Profile](images/buyhistoryuser.jpeg)     |
+| ![SweetSpot Cart](image/card.jpeg)         | ![SweetSpot Profile](image/buyhistoryuser.jpeg)     |
 
 ---
 
