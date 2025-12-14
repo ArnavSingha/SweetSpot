@@ -49,6 +49,7 @@ export async function login(
 }
 
 export async function register(
+  prevState: AuthState,
   formData: FormData
 ): Promise<AuthState> {
     const validatedFields = registerSchema.safeParse(
@@ -57,27 +58,33 @@ export async function register(
 
     if (!validatedFields.success) {
         return { 
-          error: 'Invalid data provided.',
+          error: 'Invalid data provided. Please check the fields.',
           issues: validatedFields.error.flatten().fieldErrors,
         };
     }
 
     const { name, email, password } = validatedFields.data;
 
-    const existingUser = await findUserByEmail(email);
-    if (existingUser) {
-        return { error: 'An account with this email already exists.' };
+    try {
+      const existingUser = await findUserByEmail(email);
+      if (existingUser) {
+          return { error: 'An account with this email already exists.' };
+      }
+
+      const passwordHash = await hashPassword(password);
+      const newUser = await createUser({
+          name,
+          email,
+          passwordHash,
+          role: 'user',
+      });
+
+      await createSession(newUser);
+    } catch (e) {
+      console.error(e);
+      return { error: 'Something went wrong on the server. Please try again.' };
     }
-
-    const passwordHash = await hashPassword(password);
-    const newUser = await createUser({
-        name,
-        email,
-        passwordHash,
-        role: 'user',
-    });
-
-    await createSession(newUser);
+    
     redirect('/');
 }
 

@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import { registerSchema } from '@/lib/validation/userSchemas';
-import { useTransition, useState } from 'react';
+import { useEffect, useState, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import {
   Form,
   FormControl,
@@ -22,10 +23,18 @@ import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending ? 'Creating Account...' : 'Create Account'}
+    </Button>
+  );
+}
+
 export function RegisterForm() {
-  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
-  const [serverError, setServerError] = useState<string | undefined>(undefined);
+  const [state, formAction] = useActionState(register, { success: false });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -40,43 +49,27 @@ export function RegisterForm() {
     mode: 'onTouched', // Validate on blur
   });
 
-  const onSubmit = (values: RegisterFormValues) => {
-    setServerError(undefined);
-    startTransition(async () => {
-      const formData = new FormData();
-      // We don't need to send confirmPassword to the server
-      const { confirmPassword, ...dataToSend } = values;
-      Object.entries(dataToSend).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-
-      const result = await register(formData);
-
-      if (result.error) {
-        if (result.issues) {
-           Object.entries(result.issues).forEach(([key, value]) => {
-                if (value) {
-                    form.setError(key as keyof RegisterFormValues, {
-                        type: 'server',
-                        message: value.join(', '),
-                    });
-                }
-            });
-        }
-        setServerError(result.error);
-      } else {
-        toast({
+  useEffect(() => {
+    if (state.issues) {
+      for (const [field, issues] of Object.entries(state.issues)) {
+        form.setError(field as keyof RegisterFormValues, {
+          type: 'server',
+          message: issues.join(', '),
+        });
+      }
+    }
+    if (state.success) {
+       toast({
           title: 'Account Created',
           description: 'Welcome! You have been successfully registered.',
         });
-        // The redirect will be handled by the server action on success
-      }
-    });
-  };
+    }
+  }, [state, form, toast]);
+
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form action={formAction} className="space-y-4">
         <FormField
           control={form.control}
           name="name"
@@ -97,7 +90,7 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="m@example.com" {...field} />
+                <Input placeholder="m@example.com" type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -154,17 +147,15 @@ export function RegisterForm() {
           )}
         />
 
-        {serverError && (
+        {state.error && !state.issues && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{serverError}</AlertDescription>
+            <AlertDescription>{state.error}</AlertDescription>
           </Alert>
         )}
-
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? 'Creating Account...' : 'Create Account'}
-        </Button>
+        
+        <SubmitButton />
       </form>
     </Form>
   );

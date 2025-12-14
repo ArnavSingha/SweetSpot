@@ -9,13 +9,14 @@ export function usePageLoader() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // We are listening for changes in the path or search params.
-    // When a change is detected, we assume navigation has started.
-    // In a real app, you might want more sophisticated logic,
-    // perhaps using Suspense boundaries.
-    // For now, we'll just set loading to false to "end" the loading state.
-    // The "start" will be triggered by link clicks.
-    setIsLoading(false);
+    // This effect runs whenever the URL changes.
+    // If the loader is active, this means navigation has completed,
+    // so we turn the loader off.
+    if (isLoading) {
+      setIsLoading(false);
+    }
+    // We only want this to run when the path or params change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, searchParams]);
 
 
@@ -34,24 +35,23 @@ export function usePageLoader() {
         }
     };
     
-    // Listen for form submits as well
-    const handleFormSubmit = (event: Event) => {
-        const target = event.target as HTMLElement;
-        // Don't show loader for forms inside a dialog
-        if (target.closest('[role="dialog"]')) {
-            return;
-        }
-        setIsLoading(true);
-    }
 
     document.addEventListener('click', handleAnchorClick);
-    document.addEventListener('submit', handleFormSubmit);
+
+
+    // This is a failsafe. If the loader is stuck for any reason,
+    // this will turn it off when the user navigates back/forward.
+    const handlePopState = () => {
+      setIsLoading(false);
+    };
+    window.addEventListener('popstate', handlePopState);
+
 
     return () => {
         document.removeEventListener('click', handleAnchorClick);
-        document.removeEventListener('submit', handleFormSubmit);
+        window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, [isLoading]); // Re-run if isLoading changes to detach/re-attach listeners if needed
 
   return { isLoading };
 }

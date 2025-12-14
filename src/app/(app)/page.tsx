@@ -30,12 +30,11 @@ function SweetsGrid({ sweets }: { sweets: Sweet[] }) {
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
-  const resolvedSearchParams = await searchParams;
-  const query = (resolvedSearchParams?.query as string) || '';
-  const category = (resolvedSearchParams?.category as string) || 'all';
-  const sort = (resolvedSearchParams?.sort as string) || 'default';
+  const query = (searchParams?.query as string) || '';
+  const category = (searchParams?.category as string) || 'all';
+  const sort = (searchParams?.sort as string) || 'default';
 
   const sweets = await getAllSweets({ query, category, sort });
   const categories = await getSweetCategories();
